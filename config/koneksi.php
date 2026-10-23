@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 // Kredensial database ditulis langsung mengikuti gaya proyek PBL.
 $db_host = '127.0.0.1';
-$db_port = '5433';
+$db_port = '5432';
 $db_nama = 'swiperstore';
 $db_pengguna = 'swiperstore';
 $db_sandi = 'swiperstore_dev';
