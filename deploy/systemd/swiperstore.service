@@ -1,0 +1,60 @@
+# Swiper Store — systemd unit
+#
+# Copy to /etc/systemd/system/swiperstore.service, then:
+#   systemctl daemon-reload
+#   systemctl enable --now swiperstore
+#
+# Assumes the release layout documented in README.md:
+#   /srv/swiperstore/current -> releases/<stamp>   (read-only at runtime)
+#   /srv/swiperstore/shared/storage                (uploads + trash)
+#   /srv/swiperstore/.env.production               (stable across releases)
+# The app user owns shared/storage and can read .env.production.
+
+[Unit]
+Description=Swiper Store (Next.js)
+Documentation=https://github.com/example/swiperstore
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=swiperstore
+Group=swiperstore
+WorkingDirectory=/srv/swiperstore/current
+EnvironmentFile=/srv/swiperstore/.env.production
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+Environment=NODE_OPTIONS=--max-old-space-size=384
+ExecStart=/usr/bin/node .next/standalone/server.js
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=30
+UMask=0027
+
+# Leave headroom for PostgreSQL and Nginx on a 2 GB VPS.
+MemoryHigh=640M
+MemoryMax=768M
+
+# Hardening. Node needs a writable storage dir only; the rest is read-only.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/swiperstore/shared/storage
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+[Install]
+WantedBy=multi-user.target
