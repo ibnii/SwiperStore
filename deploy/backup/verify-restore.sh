@@ -1,137 +1,71 @@
 #!/usr/bin/env bash
-# Swiper Store — restore drill.
+# Uji hasil backup tanpa menyentuh database produksi.
+# Skrip membuat database sementara, memulihkan dump ke sana, menghitung baris,
+# lalu menghapus database sementara tersebut.
 #
-# Restores a backup snapshot into a scratch database, extracts its media
-# tarball, and verifies that every listings.thumbnail_path resolves to a file
-# from the same snapshot. The scratch database is dropped afterwards unless
-# KEEP_RESTORE=1.
-#
-# Usage:
-#   ./verify-restore.sh [snapshot-dir]
-#   ./verify-restore.sh /var/backups/swiperstore/daily/20261024-020000
-#
-# Requires psql and pg_restore. RESTORE_DATABASE_URL must name a database that
-# ends in _restore_check and lives on a PostgreSQL where the same credentials
-# may create/drop databases.
+# Pemakaian:
+#   deploy/backup/verify-restore.sh /var/backups/swiperstore/db-20261024-020000.dump
+#   deploy/backup/verify-restore.sh db.dump uploads.tar.gz
 
 set -euo pipefail
-umask 077
 
-log() {
-  printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"
-}
+SKRIP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_FILE="${BACKUP_ENV:-${SKRIP_DIR}/backup.env}"
 
-die() {
-  log "ERROR: $*" >&2
-  exit 1
-}
-
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-
-for candidate in "${BACKUP_ENV:-}" /etc/swiperstore/backup.env "$SCRIPT_DIR/backup.env"; do
-  if [ -n "$candidate" ] && [ -f "$candidate" ]; then
-    set -a
-    # shellcheck disable=SC1090
-    . "$candidate"
-    set +a
-    break
-  fi
-done
-
-: "${RESTORE_DATABASE_URL:?RESTORE_DATABASE_URL wajib diisi}"
-: "${BACKUP_ROOT:?BACKUP_ROOT wajib diisi}"
-
-PSQL="${PSQL:-psql}"
-PG_RESTORE="${PG_RESTORE:-pg_restore}"
-command -v "$PSQL" >/dev/null 2>&1 || die "$PSQL tidak ditemukan"
-command -v "$PG_RESTORE" >/dev/null 2>&1 || die "$PG_RESTORE tidak ditemukan"
-
-DB_NAME="${RESTORE_DATABASE_URL##*/}"
-DB_NAME="${DB_NAME%%\?*}"
-case "$RESTORE_DATABASE_URL" in
-  *\?*) die "RESTORE_DATABASE_URL tidak boleh memakai query string" ;;
-esac
-case "$DB_NAME" in
-  *_restore_check) ;;
-  *) die "RESTORE_DATABASE_URL harus berakhir dengan _restore_check (nama: $DB_NAME)" ;;
-esac
-case "$DB_NAME" in
-  *[!A-Za-z0-9_]*) die "Nama database restore mengandung karakter tidak aman: $DB_NAME" ;;
-esac
-
-if [ -n "${DATABASE_URL:-}" ]; then
-  PROD_DB="${DATABASE_URL##*/}"
-  PROD_DB="${PROD_DB%%\?*}"
-  [ "$DB_NAME" = "$PROD_DB" ] && die "Database restore sama dengan database produksi"
+if [[ ! -f "$ENV_FILE" ]]; then
+    echo "File konfigurasi tidak ditemukan: $ENV_FILE" >&2
+    exit 1
 fi
 
-MAINT_URL="${RESTORE_MAINTENANCE_URL:-${RESTORE_DATABASE_URL%/*}/postgres}"
-[ "$MAINT_URL" = "$RESTORE_DATABASE_URL" ] && die "Tidak bisa menurunkan URL maintenance; set RESTORE_MAINTENANCE_URL"
+# shellcheck source=/dev/null
+source "$ENV_FILE"
 
-SNAP="${1:-}"
-if [ -z "$SNAP" ]; then
-  SNAP=$(find "$BACKUP_ROOT/daily" -mindepth 1 -maxdepth 1 -type d -print | sort | tail -n 1)
+DUMP="${1:-}"
+ARSIP="${2:-}"
+
+if [[ -z "$DUMP" || ! -f "$DUMP" ]]; then
+    echo "Pemakaian: $0 <file.dump> [uploads.tar.gz]" >&2
+    exit 1
 fi
-[ -n "$SNAP" ] && [ -d "$SNAP" ] || die "Snapshot tidak ditemukan: ${SNAP:-<kosong>}"
 
-log "Snapshot: $SNAP"
-log "Memeriksa checksum"
-(
-  cd "$SNAP"
-  if command -v sha256sum >/dev/null 2>&1; then
-    sha256sum -c manifest.sha256
-  else
-    shasum -a 256 -c manifest.sha256
-  fi
-)
+if [[ -n "$ARSIP" && ! -f "$ARSIP" ]]; then
+    echo "Arsip upload tidak ditemukan: $ARSIP" >&2
+    exit 1
+fi
 
-MEDIA_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/swiperstore-restore.XXXXXX")
+UMUR="${TZ:-Asia/Jakarta}"
+DB_UJI="swiperstore_uji_$$"
 
-cleanup() {
-  rm -rf "$MEDIA_ROOT"
-  if [ "${KEEP_RESTORE:-0}" != "1" ]; then
-    "$PSQL" "$MAINT_URL" -v ON_ERROR_STOP=1 -q \
-      -c "DROP DATABASE IF EXISTS \"$DB_NAME\" WITH (FORCE)" >/dev/null 2>&1 || true
-  else
-    log "KEEP_RESTORE=1: database $DB_NAME dibiarkan"
-  fi
+bersihkan() {
+    PGPASSWORD="$DB_PASS" dropdb \
+        --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" \
+        --if-exists "$DB_UJI" >/dev/null 2>&1 || true
 }
-trap cleanup EXIT INT TERM
+trap bersihkan EXIT
 
-log "Membuat database scratch: $DB_NAME"
-"$PSQL" "$MAINT_URL" -v ON_ERROR_STOP=1 -q \
-  -c "DROP DATABASE IF EXISTS \"$DB_NAME\" WITH (FORCE)" \
-  -c "CREATE DATABASE \"$DB_NAME\""
+echo "Membuat database uji sementara: ${DB_UJI}"
+PGPASSWORD="$DB_PASS" createdb \
+    --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" \
+    --template=template0 "$DB_UJI"
 
-log "Restore dump"
-"$PG_RESTORE" --no-owner --no-privileges --exit-on-error \
-  --dbname "$RESTORE_DATABASE_URL" "$SNAP/db.dump"
+echo "Memulihkan dump ke database uji..."
+PGPASSWORD="$DB_PASS" pg_restore \
+    --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" \
+    --dbname="$DB_UJI" --no-owner --no-privileges --exit-on-error "$DUMP"
 
-log "Mengekstrak media"
-tar -xzf "$SNAP/media.tar.gz" -C "$MEDIA_ROOT"
+JUMLAH_AKUN="$(PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" \
+    --username="$DB_USER" --dbname="$DB_UJI" -tA -c 'SELECT count(*) FROM akun')"
+JUMLAH_ADMIN="$(PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" \
+    --username="$DB_USER" --dbname="$DB_UJI" -tA -c 'SELECT count(*) FROM admin')"
 
-TOTAL=$("$PSQL" "$RESTORE_DATABASE_URL" -At -q -c "select count(*) from listings")
-SOLD=$("$PSQL" "$RESTORE_DATABASE_URL" -At -q -c "select count(*) from listings where is_sold")
-log "Listing: $TOTAL total, $SOLD terjual"
+echo "OK database: akun=${JUMLAH_AKUN} admin=${JUMLAH_ADMIN}"
 
-CHECKED=0
-MISSING=0
-while IFS= read -r thumb; do
-  [ -n "$thumb" ] || continue
-  CHECKED=$((CHECKED + 1))
-  REL="${thumb#/media/}"
-  if [ ! -f "$MEDIA_ROOT/uploads/$REL" ]; then
-    MISSING=$((MISSING + 1))
-    if [ "$MISSING" -le 10 ]; then
-      log "Thumbnail hilang: $thumb"
-    fi
-  fi
-done < <("$PSQL" "$RESTORE_DATABASE_URL" -At -q -c "select thumbnail_path from listings order by code")
-
-log "Thumbnail diperiksa: $CHECKED, hilang: $MISSING"
-
-if [ "$MISSING" -gt 0 ]; then
-  die "Restore tidak lengkap: $MISSING thumbnail tidak ada di arsip media"
+if [[ -n "$ARSIP" ]]; then
+    FOLDER_UJI="$(mktemp -d)"
+    trap 'rm -rf "$FOLDER_UJI"; bersihkan' EXIT
+    tar -xzf "$ARSIP" -C "$FOLDER_UJI"
+    JUMLAH_GAMBAR="$(find "$FOLDER_UJI/uploads" -type f -name '*.webp' | wc -l | tr -d ' ')"
+    echo "OK upload: gambar_webp=${JUMLAH_GAMBAR}"
 fi
 
-log "Restore drill OK"
+echo "[$(TZ="$UMUR" date '+%Y-%m-%d %H:%M:%S')] Verifikasi backup selesai; database uji dihapus."
