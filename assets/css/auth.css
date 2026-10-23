@@ -1,0 +1,81 @@
+.area-auth {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 2rem 1.25rem;
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 0%, rgba(212, 175, 55, 0.12), transparent),
+        var(--background);
+}
+
+.auth-shell {
+    width: 100%;
+    max-width: 26rem;
+}
+
+.auth-kartu {
+    padding: 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+.auth-merek {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    letter-spacing: 0.18em;
+    text-align: center;
+    color: var(--champagne);
+}
+
+.auth-eyebrow {
+    margin-top: 0.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--muted);
+}
+
+.auth-judul {
+    margin-top: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    letter-spacing: 0.03em;
+    text-align: center;
+    color: var(--champagne);
+}
+
+.auth-teks {
+    margin-top: 0.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--muted);
+}
+
+.auth-form {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.auth-kembali {
+    display: block;
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    transition: color 150ms ease;
+}
+
+.auth-kembali:hover {
+    color: var(--gold);
+}
+
+@media (max-width: 420px) {
+    .auth-kartu {
+        padding: 1.5rem;
+    }
+}

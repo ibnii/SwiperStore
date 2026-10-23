@@ -1,0 +1,237 @@
+.halaman-detail {
+    padding-top: 1.5rem;
+    padding-bottom: 4rem;
+}
+
+.detail-grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.video-bingkai {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--elevated);
+}
+
+.video-bingkai iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+}
+
+.video-kosong {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 16 / 9;
+    padding: 1.5rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+
+.video-catatan {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.video-catatan a {
+    font-weight: 600;
+    color: var(--champagne);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 150ms ease;
+}
+
+.video-catatan a:hover {
+    color: var(--gold);
+}
+
+.panel-detail {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+}
+
+.panel-detail__atas {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.panel-detail__kode {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+    color: var(--gold);
+}
+
+.panel-detail__judul {
+    margin-top: 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 7vw, 3rem);
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: var(--champagne);
+    text-wrap: balance;
+}
+
+.panel-detail__harga {
+    margin-top: 1.25rem;
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    letter-spacing: 0.03em;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+}
+
+.panel-detail .tombol {
+    margin-top: 1.5rem;
+}
+
+.panel-detail__bantuan {
+    margin-top: 0.75rem;
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.rincian {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.875rem;
+}
+
+.rincian div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.rincian dt {
+    color: var(--muted);
+}
+
+.rincian dd {
+    color: var(--foreground);
+    text-align: right;
+}
+
+.deskripsi-panel {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+}
+
+.deskripsi-panel h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    letter-spacing: 0.03em;
+    color: var(--champagne);
+}
+
+.deskripsi-teks {
+    margin-top: 0.75rem;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+
+.cta-lengket {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 30;
+    border-top: 1px solid var(--border);
+    background: rgba(11, 11, 11, 0.95);
+    backdrop-filter: blur(12px);
+    padding: 0.75rem 1.25rem;
+}
+
+.cta-lengket__isi {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-inline: 0;
+}
+
+.cta-lengket__info {
+    min-width: 0;
+}
+
+.cta-lengket__kode {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+}
+
+.cta-lengket__harga {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    letter-spacing: 0.03em;
+    color: var(--champagne);
+    font-variant-numeric: tabular-nums;
+}
+
+.ruang-cta-mobile {
+    height: 5.75rem;
+}
+
+@media (min-width: 640px) {
+    .panel-detail,
+    .deskripsi-panel {
+        padding: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .halaman-detail {
+        padding-bottom: 4rem;
+    }
+
+    .detail-grid {
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .detail-video {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .panel-detail {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        position: sticky;
+        top: 6rem;
+    }
+
+    .deskripsi-panel {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .cta-lengket,
+    .ruang-cta-mobile {
+        display: none;
+    }
+}

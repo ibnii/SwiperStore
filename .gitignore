@@ -1,0 +1,14 @@
+.DS_Store
+*.log
+
+# Konfigurasi dan kredensial lokal.
+deploy/backup/backup.env
+
+# Data runtime.
+storage/sessions/*
+!storage/sessions/.gitkeep
+storage/trash/*
+!storage/trash/.gitkeep
+
+# Unggahan pengguna (gambar akun).
+storage/uploads/listings/*
