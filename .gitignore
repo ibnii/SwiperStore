@@ -1,14 +1,27 @@
-.DS_Store
-*.log
+# Dependensi dan artefak Next.js lama
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+coverage/
+test-results/
+playwright-report/
+blob-report/
 
-# Konfigurasi dan kredensial lokal.
+# Konfigurasi dan kredensial lokal
+.env
+.env.*
+!.env.example
 deploy/backup/backup.env
 
-# Data runtime.
+# Data runtime
 storage/sessions/*
 !storage/sessions/.gitkeep
 storage/trash/*
 !storage/trash/.gitkeep
-
-# Unggahan pengguna (gambar akun).
 storage/uploads/listings/*
+
+# Log dan file OS
+*.log
+.DS_Store
