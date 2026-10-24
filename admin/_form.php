@@ -109,12 +109,24 @@ $ringkasan_error = array_filter($ringkasan_error, static fn (array $item): bool 
     <div class="bidang">
         <label for="gambar">Thumbnail</label>
         <div class="gambar-bidang">
-            <img
-                src="<?= !empty($jalur_gambar) ? e(url_media($jalur_gambar)) : '' ?>"
-                alt="Pratinjau thumbnail"
-                class="gambar-pratinjau"
-                <?= empty($jalur_gambar) ? 'hidden' : '' ?>
-            >
+            <div class="gambar-pratinjau-bingkai<?= !empty($jalur_gambar) ? ' gambar-pratinjau-bingkai--terisi' : '' ?>">
+                <?php if (!empty($jalur_gambar)): ?>
+                    <img
+                        src="<?= e(url_media($jalur_gambar)) ?>"
+                        alt="Pratinjau thumbnail akun"
+                        class="gambar-pratinjau"
+                    >
+                <?php endif; ?>
+                <div class="gambar-pratinjau-kosong" <?= !empty($jalur_gambar) ? 'hidden' : '' ?>>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+                        <circle cx="8.5" cy="9.5" r="1.5"/>
+                        <path d="m4 17 4.5-4.5 3 3L15 12l5 5"/>
+                    </svg>
+                    <span class="gambar-pratinjau-kosong__judul">Belum ada thumbnail</span>
+                    <span class="gambar-pratinjau-kosong__teks">Pilih foto untuk melihat pratinjau.</span>
+                </div>
+            </div>
             <div class="gambar-input">
                 <input
                     id="gambar"
@@ -135,10 +147,12 @@ $ringkasan_error = array_filter($ringkasan_error, static fn (array $item): bool 
         </div>
     </div>
 
-    <label class="centang">
-        <input type="checkbox" name="terjual" value="1" <?= $nilai['terjual'] ? 'checked' : '' ?>>
-        <span>Tandai sebagai terjual</span>
-    </label>
+    <?php if ($mode === 'edit'): ?>
+        <label class="centang">
+            <input type="checkbox" name="terjual" value="1" <?= $nilai['terjual'] ? 'checked' : '' ?>>
+            <span>Tandai sebagai terjual</span>
+        </label>
+    <?php endif; ?>
 
     <div class="form-aksi">
         <button type="submit" class="tombol tombol--emas"><?= $mode === 'edit' ? 'Simpan perubahan' : 'Tambah akun' ?></button>

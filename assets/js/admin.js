@@ -1,8 +1,10 @@
 const input = document.querySelector("#gambar");
-const pratinjau = document.querySelector(".gambar-pratinjau");
+const kosong = document.querySelector(".gambar-pratinjau-kosong");
+const bingkai = document.querySelector(".gambar-pratinjau-bingkai");
 
-if (input && pratinjau) {
+if (input && bingkai) {
     let url = null;
+    let pratinjau = bingkai.querySelector(".gambar-pratinjau");
 
     input.addEventListener("change", () => {
         const berkas = input.files?.[0];
@@ -16,8 +18,24 @@ if (input && pratinjau) {
         }
 
         url = URL.createObjectURL(berkas);
+
+        if (!pratinjau) {
+            pratinjau = document.createElement("img");
+            pratinjau.className = "gambar-pratinjau";
+            pratinjau.alt = "Pratinjau thumbnail akun";
+            bingkai.prepend(pratinjau);
+        }
+
         pratinjau.src = url;
         pratinjau.hidden = false;
+
+        if (kosong) {
+            kosong.hidden = true;
+        }
+
+        if (bingkai) {
+            bingkai.classList.add("gambar-pratinjau-bingkai--terisi");
+        }
     });
 
     window.addEventListener("pagehide", () => {
