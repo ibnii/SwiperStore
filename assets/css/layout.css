@@ -52,6 +52,28 @@
     margin: 0;
 }
 
+.admin-header__aksi {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.admin-header__tautan {
+    font-size: 0.8125rem;
+    color: var(--muted);
+    text-decoration: none;
+}
+
+.admin-header__tautan:hover {
+    color: var(--champagne);
+}
+
+@media (max-width: 600px) {
+    .admin-header__tautan {
+        display: none;
+    }
+}
+
 @media (min-width: 640px) {
     .situs-footer__isi {
         flex-direction: row;

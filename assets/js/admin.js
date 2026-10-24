@@ -26,3 +26,37 @@ if (input && pratinjau) {
         }
     });
 }
+
+document.addEventListener("click", (event) => {
+    document.querySelectorAll("details.menu[open]").forEach((menu) => {
+        if (!menu.contains(event.target)) {
+            menu.open = false;
+        }
+    });
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    document.querySelectorAll("details.menu[open]").forEach((menu) => {
+        menu.open = false;
+    });
+});
+
+document.querySelectorAll("details.menu").forEach((menu) => {
+    const panel = menu.querySelector(".menu__isi");
+
+    menu.addEventListener("toggle", () => {
+        panel.classList.remove("menu__isi--atas");
+
+        if (!menu.open) {
+            return;
+        }
+
+        if (panel.getBoundingClientRect().bottom > window.innerHeight - 8) {
+            panel.classList.add("menu__isi--atas");
+        }
+    });
+});

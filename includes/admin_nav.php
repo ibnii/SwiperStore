@@ -12,9 +12,12 @@ if (!defined('APP_MULAI')) {
             <span>Swiper Store</span>
             <span class="merek__aksen">Admin</span>
         </a>
-        <form action="/admin/logout" method="post">
-            <?= csrf_field() ?>
-            <button type="submit" class="tombol tombol--garis">Keluar</button>
-        </form>
+        <div class="admin-header__aksi">
+            <a href="/" class="admin-header__tautan">Lihat katalog</a>
+            <form action="/admin/logout" method="post">
+                <?= csrf_field() ?>
+                <button type="submit" class="tombol tombol--garis">Keluar</button>
+            </form>
+        </div>
     </div>
 </header>

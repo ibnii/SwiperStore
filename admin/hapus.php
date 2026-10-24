@@ -47,9 +47,9 @@ require __DIR__ . '/../includes/header.php';
         <div class="konfirmasi-akun">
             <img src="<?= e(url_media($akun['jalur_gambar'])) ?>" alt="Thumbnail <?= e($akun['kode']) ?>">
             <div>
-                <p class="sel-akun__kode"><?= e($akun['kode']) ?></p>
-                <p class="sel-akun__judul"><?= e($akun['judul']) ?></p>
-                <p class="kartu-admin__harga"><?= e(rupiah($akun['harga'])) ?></p>
+                <p class="konfirmasi-akun__kode"><?= e($akun['kode']) ?></p>
+                <p class="konfirmasi-akun__judul"><?= e($akun['judul']) ?></p>
+                <p class="konfirmasi-akun__harga"><?= e(rupiah($akun['harga'])) ?></p>
             </div>
         </div>
 
